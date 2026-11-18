@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos 2026 - Fluxo Dia 05 e Dia 20</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Barra Lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="logo">
+                    <h2>Finanças <span>2026</span></h2>
+                    <p class="logo-sub">Ciclo Quinzenal (05 & 20)</p>
+                </div>
+
+                <nav class="menu">
+                    <p class="menu-label">PERÍODO (MÊS)</p>
+                    <select id="filtro-mes">
+                        <option value="TODOS">Ano Completo (2026)</option>
+                        <option value="01">Janeiro</option>
+                        <option value="02">Fevereiro</option>
+                        <option value="03">Março</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Maio</option>
+                        <option value="06">Junho</option>
+                        <option value="07">Julho</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11" selected>Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+
+                    <p class="menu-label" style="margin-top: 16px;">FILTRAR POR PAGAMENTO</p>
+                    <select id="filtro-ciclo">
+                        <option value="TODOS">Todos os Dias (05 e 20)</option>
+                        <option value="Dia 05">Pagamento Dia 05 (1ª Quinzena)</option>
+                        <option value="Dia 20">Pagamento Dia 20 (2ª Quinzena)</option>
+                    </select>
+                </nav>
+
+                <!-- Formulário de Novo Lançamento na Barra Lateral -->
+                <section class="sidebar-form-section">
+                    <p class="menu-label sidebar-form-title">NOVO LANÇAMENTO</p>
+                    <form id="form-lancamento" class="sidebar-form">
+                        <div class="sidebar-row-2">
+                            <div class="form-group">
+                                <label for="ciclo">Pagamento</label>
+                                <select id="ciclo" required>
+                                    <option value="Dia 05">Dia 05</option>
+                                    <option value="Dia 20">Dia 20</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="data">Data</label>
+                                <input type="date" id="data" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <div class="desc-input-row">
+                                <input type="text" id="descricao" list="lista-descricoes"
+                                    placeholder="Escolha ou digite..." required autocomplete="off">
+                                <button type="button" class="btn-add-desc" onclick="salvarNovaDescricaoManual()"
+                                    title="Adicionar esta descrição na lista fixa">+ Lista</button>
+                                <button type="button" class="btn-rem-desc" onclick="removerDescricaoManual()"
+                                    title="Remover esta descrição da lista fixa">- Lista</button>
+                            </div>
+                            <datalist id="lista-descricoes">
+                                <!-- Opções inseridas via JavaScript -->
+                            </datalist>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoria">Categoria</label>
+                            <select id="categoria" required>
+                                <option value="Salário / Renda">Salário / Renda</option>
+                                <option value="Cartões de Crédito">Cartões de Crédito</option>
+                                <option value="Empréstimos / Dívidas">Empréstimos / Dívidas</option>
+                                <option value="Moradia / Casa">Moradia / Casa</option>
+                                <option value="Veículo / Carro">Veículo / Carro</option>
+                                <option value="Contas Fixas / Consumo">Contas Fixas / Consumo</option>
+                                <option value="Mercado / Alimentação">Mercado / Alimentação</option>
+                                <option value="Educação / Transporte Escolar">Educação / Transporte Escolar</option>
+                                <option value="Saúde / Tratamento Dentário">Saúde / Tratamento Dentário</option>
+                                <option value="Lazer / Diversão">Lazer / Diversão</option>
+                                <option value="Pessoas / Terceiros">Pessoas / Terceiros</option>
+                                <option value="MEI / Trabalho">MEI / Trabalho</option>
+                                <option value="Poupança / Caixinha">Poupança / Caixinha</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+
+                        <div class="sidebar-row-2">
+                            <div class="form-group">
+                                <label for="tipo">Tipo</label>
+                                <select id="tipo" required>
+                                    <option value="despesa">Saída (-)</option>
+                                    <option value="receita">Entrada (+)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select id="status" required>
+                                    <option value="Pendente">Pendente</option>
+                                    <option value="Pago">Pago</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valor">Valor (R$)</label>
+                            <input type="number" id="valor" step="0.01" min="0.01" placeholder="0,00" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary">+ Adicionar Lançamento</button>
+                    </form>
+                </section>
+
+                <!-- Gráfico de Resumo Geral (Antigos Cards do Topo) -->
+                <section class="sidebar-chart-section">
+                    <p class="menu-label sidebar-form-title">RESUMO DO MÊS (GRÁFICO)</p>
+                    <div class="sidebar-kpi-bars">
+                        <div class="skpi-item">
+                            <div class="skpi-header">
+                                <span>Receitas (Mês)</span>
+                                <strong class="text-green" id="total-receitas">R$ 0,00</strong>
+                            </div>
+                            <div class="skpi-track">
+                                <div class="skpi-fill fill-green" id="bar-receitas" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="skpi-item">
+                            <div class="skpi-header">
+                                <span>Saídas (Mês)</span>
+                                <strong class="text-red" id="total-despesas">R$ 0,00</strong>
+                            </div>
+                            <div class="skpi-track">
+                                <div class="skpi-fill fill-red" id="bar-despesas" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="skpi-item">
+                            <div class="skpi-header">
+                                <span>Saldo Livre (Mês)</span>
+                                <strong id="saldo-atual" style="color: #38bdf8;">R$ 0,00</strong>
+                            </div>
+                            <div class="skpi-track">
+                                <div class="skpi-fill fill-accent" id="bar-saldo" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="skpi-item">
+                            <div class="skpi-header">
+                                <span>A Pagar (Pendentes)</span>
+                                <strong class="text-amber" id="total-pendente">R$ 0,00</strong>
+                            </div>
+                            <div class="skpi-track">
+                                <div class="skpi-fill fill-amber" id="bar-pendente" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="skpi-item">
+                            <div class="skpi-header">
+                                <span>Saldo na Caixinha</span>
+                                <strong class="text-teal" id="kpi-poupanca">R$ 0,00</strong>
+                            </div>
+                            <div class="skpi-track">
+                                <div class="skpi-fill fill-teal" id="bar-poupanca" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="btn-exportar" class="btn-secondary">Exportar CSV (Excel)</button>
+                <button id="btn-limpar" class="btn-danger-outline">Zerar Dados</button>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard Financeiro</h1>
+                    <p class="subtitle">Controle de entradas, saídas (dias 05 e 20), financiamentos e poupança</p>
+                </div>
+            </header>
+
+            <!-- Comparativo Dia 05 vs Dia 20 + Caixinha de Poupança -->
+            <section class="quinzena-grid">
+                <div class="quinzena-card dia-05">
+                    <div class="q-header">
+                        <span class="q-badge badge-05">1º PAGAMENTO • DIA 05</span>
+                        <span class="q-saldo" id="saldo-05">Sobra: R$ 0,00</span>
+                    </div>
+                    <div class="q-body">
+                        <div>
+                            <small>Recebido (Dia 05)</small>
+                            <strong class="text-green" id="rec-05">R$ 0,00</strong>
+                        </div>
+                        <div>
+                            <small>Saídas (Dia 05)</small>
+                            <strong class="text-red" id="desp-05">R$ 0,00</strong>
+                        </div>
+                        <div>
+                            <small>Pendente (Dia 05)</small>
+                            <strong class="text-amber" id="pend-05">R$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quinzena-card dia-20">
+                    <div class="q-header">
+                        <span class="q-badge badge-20">2º PAGAMENTO • DIA 20</span>
+                        <span class="q-saldo" id="saldo-20">Sobra: R$ 0,00</span>
+                    </div>
+                    <div class="q-body">
+                        <div>
+                            <small>Recebido (Dia 20)</small>
+                            <strong class="text-green" id="rec-20">R$ 0,00</strong>
+                        </div>
+                        <div>
+                            <small>Saídas (Dia 20)</small>
+                            <strong class="text-red" id="desp-20">R$ 0,00</strong>
+                        </div>
+                        <div>
+                            <small>Pendente (Dia 20)</small>
+                            <strong class="text-amber" id="pend-20">R$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Interativo Caixinha / Poupança -->
+                <div class="quinzena-card caixinha-card">
+                    <div class="q-header">
+                        <span class="q-badge badge-poupanca">CAIXINHA • POUPANÇA</span>
+                        <button class="btn-edit-small" onclick="editarMetaPoupanca()">Editar Meta</button>
+                    </div>
+
+                    <div class="caixinha-saldo-row">
+                        <div>
+                            <small>Total Acumulado</small>
+                            <strong class="caixinha-valor-principal" id="caixinha-saldo-texto">R$ 0,00</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <small>Meta Definida</small>
+                            <strong id="caixinha-meta-texto">R$ 5.000,00</strong>
+                        </div>
+                    </div>
+
+                    <div class="caixinha-progress">
+                        <div class="bar-track">
+                            <div class="bar-fill" id="caixinha-barra" style="width: 0%;"></div>
+                        </div>
+                        <small id="caixinha-percentual">0.0% da meta atingida</small>
+                    </div>
+
+                    <div class="caixinha-form">
+                        <select id="poupanca-ciclo" title="De qual pagamento sai/entra">
+                            <option value="Dia 05">Dia 05</option>
+                            <option value="Dia 20">Dia 20</option>
+                        </select>
+                        <input type="number" id="poupanca-valor" step="0.01" min="0.01" placeholder="Valor R$">
+                        <button type="button" class="btn-guardar" onclick="movimentarPoupanca('guardar')"
+                            title="Guardar na poupança">+ Guardar</button>
+                        <button type="button" class="btn-resgatar" onclick="movimentarPoupanca('resgatar')"
+                            title="Resgatar da poupança">- Resgatar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard de Financiamentos e Contratos Fixos (Divididos em 2x no mês) -->
+            <section class="financiamentos-section">
+                <div class="fin-grid" id="grid-financiamentos">
+                    <!-- Cards inseridos via JavaScript -->
+                </div>
+            </section>
+
+            <!-- Área Inferior: Tabela + Resumo por Categoria -->
+            <section class="content-split">
+                <!-- Tabela estilo Planilha -->
+                <div class="card table-section">
+                    <div class="table-header">
+                        <h3>Cronograma de Contas e Recebimentos</h3>
+                        <div class="table-filters">
+                            <select id="filtro-descricao">
+                                <option value="TODAS">Todas as Descrições</option>
+                            </select>
+                            <input type="text" id="busca" placeholder="Pesquisar texto...">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ciclo Pagto.</th>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Status</th>
+                                    <th>Valor</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-corpo">
+                                <!-- Linhas inseridas via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Barras por Categoria -->
+                <div class="card chart-section">
+                    <h3>Saídas por Categoria</h3>
+                    <div id="grafico-categorias" class="bars-container">
+                        <!-- Barras inseridas via JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Editar Contrato/Financiamento (Divisão Dia 05 e Dia 20) -->
+    <div id="modal-contrato" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="modal-titulo">Configurar Contrato</h3>
+            <form id="form-contrato">
+                <input type="hidden" id="contrato-id">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="contrato-valor-05">Valor Pago no Dia 05 (R$)</label>
+                    <input type="number" id="contrato-valor-05" step="0.01" min="0" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="contrato-valor-20">Valor Pago no Dia 20 (R$)</label>
+                    <input type="number" id="contrato-valor-20" step="0.01" min="0" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="contrato-pagas">Parcelas Mensais Já Quitadas</label>
+                    <input type="number" id="contrato-pagas" min="0" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="contrato-total">Total de Parcelas do Contrato (Meses)</label>
+                    <input type="number" id="contrato-total" min="1" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const descricoesPadrao = [
+            "AQUISIÇÃO CASA PROPRIA",
+            "CONTA GLAB",
+            "CONTA VIVO CELULAR",
+            "CONTA FACULDADE",
+            "CARTÃO SARA",
+            "MERCADO DESPESA E COMPRA DE CASA",
+            "IPVA",
+            "CARTÃO BV",
+            "CARTÃO NEON",
+            "CONTA DE AGUA",
+            "CONTA CARTÃO GLAUBER NUBANK",
+            "CONTA CARTÃO GLAUBER MERCADO LIVRE",
+            "CONTA DE LUZ",
+            "EMPRESTIMO BANCO BB",
+            "CONTA TRANSPORTE ESCOLAR AGATHA",
+            "EMPRESTIMO GLAUBER NUBANK",
+            "GASTO COM DIVERSÃO",
+            "GASTO FAST FOOD",
+            "GILMAR",
+            "GASTO FEIRA",
+            "EMPRESTIMO GLAUBER",
+            "DIVIDA DE 1 MÊS PARA O OUTRO",
+            "TRATAMENTO DENTARIO",
+            "EMPRESTIMO 99",
+            "DENIS",
+            "MEI SARA",
+            "COMPRA MERCADO LIVRE",
+            "LICENCIAMENTO CARRO",
+            "CARTÃO CAIXA SIM",
+            "CARTÃO ATACADÃO",
+            "DEBITOS VEICULO",
+            "GASOLINA",
+            "FINANCIAMENTO CARRO",
+            "CARTÃO BANCO DO BRASIL",
+            "EMPRESTIMO MERCADO LIVRE",
+            "CONTA BANCO DO BRASIL",
+            "PAI",
+            "CARTÃO CARREFOUR",
+            "CARTÃO NUBANK SARA"
+        ];
+
+        const dadosExemplo = [
+            { id: 1, ciclo: 'Dia 05', data: '2026-11-05', descricao: 'PAGAMENTO SALÁRIO DIA 05', categoria: 'Salário / Renda', tipo: 'receita', status: 'Pago', valor: 2750.00 },
+            { id: 2, ciclo: 'Dia 05', data: '2026-11-05', descricao: 'AQUISIÇÃO CASA PROPRIA', categoria: 'Moradia / Casa', tipo: 'despesa', status: 'Pago', valor: 725.00 },
+            { id: 3, ciclo: 'Dia 05', data: '2026-11-05', descricao: 'FINANCIAMENTO CARRO', categoria: 'Veículo / Carro', tipo: 'despesa', status: 'Pago', valor: 445.00 },
+            { id: 4, ciclo: 'Dia 05', data: '2026-11-08', descricao: 'CONTA DE AGUA', categoria: 'Contas Fixas / Consumo', tipo: 'despesa', status: 'Pago', valor: 120.00 },
+            { id: 5, ciclo: 'Dia 20', data: '2026-11-20', descricao: 'PAGAMENTO SALÁRIO DIA 20', categoria: 'Salário / Renda', tipo: 'receita', status: 'Pendente', valor: 2750.00 },
+            { id: 6, ciclo: 'Dia 20', data: '2026-11-20', descricao: 'AQUISIÇÃO CASA PROPRIA', categoria: 'Moradia / Casa', tipo: 'despesa', status: 'Pendente', valor: 725.00 },
+            { id: 7, ciclo: 'Dia 20', data: '2026-11-20', descricao: 'FINANCIAMENTO CARRO', categoria: 'Veículo / Carro', tipo: 'despesa', status: 'Pendente', valor: 445.00 },
+            { id: 8, ciclo: 'Dia 20', data: '2026-11-20', descricao: 'TRATAMENTO DENTARIO', categoria: 'Saúde / Tratamento Dentário', tipo: 'despesa', status: 'Pendente', valor: 65.00 }
+        ];
+
+        const contratosExemplo = [
+            {
+                id: 'casa',
+                titulo: 'AQUISIÇÃO CASA PROPRIA',
+                categoria: 'Moradia / Casa',
+                cor: '#d4af37',
+                valorDia05: 725.00,
+                valorDia20: 725.00,
+                parcelasPagas: 42,
+                totalParcelas: 360
+            },
+            {
+                id: 'carro',
+                titulo: 'FINANCIAMENTO CARRO',
+                categoria: 'Veículo / Carro',
+                cor: '#f5d76e',
+                valorDia05: 445.00,
+                valorDia20: 445.00,
+                parcelasPagas: 24,
+                totalParcelas: 48
+            },
+            {
+                id: 'dental',
+                titulo: 'TRATAMENTO DENTARIO',
+                categoria: 'Saúde / Tratamento Dentário',
+                cor: '#34d399',
+                valorDia05: 0.00,
+                valorDia20: 65.00,
+                parcelasPagas: 11,
+                totalParcelas: 12
+            }
+        ];
+
+        const poupancaExemplo = {
+            saldoTotal: 0.00,
+            meta: 5000.00
+        };
+
+        const lancamentosSalvos = localStorage.getItem('gastos_2026_v5');
+        let lancamentos = lancamentosSalvos !== null ? JSON.parse(lancamentosSalvos) : dadosExemplo;
+        let listaDescricoes = JSON.parse(localStorage.getItem('descricoes_2026_v5')) || descricoesPadrao;
+        let contratos = JSON.parse(localStorage.getItem('contratos_2026_v5')) || contratosExemplo;
+        let poupanca = JSON.parse(localStorage.getItem('poupanca_2026_v5')) || poupancaExemplo;
+
+        const form = document.getElementById('form-lancamento');
+        const tabelaCorpo = document.getElementById('tabela-corpo');
+        const filtroMes = document.getElementById('filtro-mes');
+        const filtroCiclo = document.getElementById('filtro-ciclo');
+        const filtroDescricao = document.getElementById('filtro-descricao');
+        const campoBusca = document.getElementById('busca');
+
+        function sincronizarDataFormulario() {
+            const mes = filtroMes.value !== 'TODOS' ? filtroMes.value : '11';
+            const dia = document.getElementById('ciclo').value === 'Dia 05' ? '05' : '20';
+            document.getElementById('data').value = `2026-${mes}-${dia}`;
+        }
+
+        sincronizarDataFormulario();
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatarData(dataISO) {
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function salvarDados() {
+            localStorage.setItem('descricoes_2026_v5', JSON.stringify(listaDescricoes));
+            localStorage.setItem('gastos_2026_v5', JSON.stringify(lancamentos));
+            localStorage.setItem('contratos_2026_v5', JSON.stringify(contratos));
+            localStorage.setItem('poupanca_2026_v5', JSON.stringify(poupanca));
+        }
+
+        function renderizarListaDescricoes() {
+            const datalist = document.getElementById('lista-descricoes');
+            const selectFiltro = document.getElementById('filtro-descricao');
+            const valorSelecionadoAtual = selectFiltro.value;
+
+            const ordenadas = [...listaDescricoes].sort((a, b) => a.localeCompare(b));
+
+            datalist.innerHTML = '';
+            selectFiltro.innerHTML = '<option value="TODAS">Todas as Descrições</option>';
+
+            ordenadas.forEach(desc => {
+                const optData = document.createElement('option');
+                optData.value = desc;
+                datalist.appendChild(optData);
+
+                const optFiltro = document.createElement('option');
+                optFiltro.value = desc;
+                optFiltro.textContent = desc;
+                selectFiltro.appendChild(optFiltro);
+            });
+
+            if (ordenadas.includes(valorSelecionadoAtual)) {
+                selectFiltro.value = valorSelecionadoAtual;
+            }
+        }
+
+        window.salvarNovaDescricaoManual = function () {
+            const inputDesc = document.getElementById('descricao');
+            const novaDesc = inputDesc.value.trim().toUpperCase();
+
+            if (!novaDesc) {
+                alert('Digite o nome da nova descrição no campo antes de salvar na lista.');
+                inputDesc.focus();
+                return;
+            }
+
+            if (!listaDescricoes.includes(novaDesc)) {
+                listaDescricoes.push(novaDesc);
+                salvarDados();
+                renderizarListaDescricoes();
+                alert(`"${novaDesc}" foi adicionada à sua lista de descrições!`);
+            } else {
+                alert('Esta descrição já está cadastrada na sua lista.');
+            }
+            inputDesc.value = novaDesc;
+        };
+
+        window.removerDescricaoManual = function () {
+            const inputDesc = document.getElementById('descricao');
+            const descAlvo = inputDesc.value.trim().toUpperCase();
+
+            if (!descAlvo) {
+                alert('Selecione ou digite o nome da descrição que deseja remover da lista.');
+                inputDesc.focus();
+                return;
+            }
+
+            const indice = listaDescricoes.indexOf(descAlvo);
+            if (indice === -1) {
+                alert(`"${descAlvo}" não foi encontrada na sua lista fixa de descrições.`);
+                return;
+            }
+
+            if (confirm(`Deseja remover "${descAlvo}" da sua lista de descrições?\n(Os lançamentos já registrados na tabela serão mantidos)`)) {
+                listaDescricoes.splice(indice, 1);
+                salvarDados();
+                renderizarListaDescricoes();
+                inputDesc.value = '';
+                alert(`"${descAlvo}" foi removida da lista!`);
+            }
+        };
+
+        function renderizarPoupanca() {
+            const percentual = poupanca.meta > 0
+                ? Math.min(100, (poupanca.saldoTotal / poupanca.meta) * 100).toFixed(1)
+                : '0.0';
+
+            document.getElementById('kpi-poupanca').textContent = formatarMoeda(poupanca.saldoTotal);
+            document.getElementById('bar-poupanca').style.width = `${percentual}%`;
+            document.getElementById('caixinha-saldo-texto').textContent = formatarMoeda(poupanca.saldoTotal);
+            document.getElementById('caixinha-meta-texto').textContent = formatarMoeda(poupanca.meta);
+            document.getElementById('caixinha-barra').style.width = `${percentual}%`;
+            document.getElementById('caixinha-percentual').textContent = `${percentual}% da meta atingida`;
+        }
+
+        window.movimentarPoupanca = function (acao) {
+            const inputValor = document.getElementById('poupanca-valor');
+            const cicloEscolhido = document.getElementById('poupanca-ciclo').value;
+            const valor = parseFloat(inputValor.value);
+
+            if (!valor || valor <= 0) {
+                alert('Informe um valor válido para lançar na caixinha.');
+                return;
+            }
+
+            const mesAtual = filtroMes.value !== 'TODOS' ? filtroMes.value : '11';
+            const diaNum = cicloEscolhido === 'Dia 05' ? '05' : '20';
+
+            if (acao === 'guardar') {
+                poupanca.saldoTotal += valor;
+                lancamentos.push({
+                    id: Date.now(),
+                    ciclo: cicloEscolhido,
+                    data: `2026-${mesAtual}-${diaNum}`,
+                    descricao: 'DEPÓSITO CAIXINHA POUPANÇA',
+                    categoria: 'Poupança / Caixinha',
+                    tipo: 'despesa',
+                    status: 'Pago',
+                    valor: valor
+                });
+            } else if (acao === 'resgatar') {
+                if (valor > poupanca.saldoTotal) {
+                    alert('Saldo insuficiente na caixinha para esse resgate.');
+                    return;
+                }
+                poupanca.saldoTotal -= valor;
+                lancamentos.push({
+                    id: Date.now(),
+                    ciclo: cicloEscolhido,
+                    data: `2026-${mesAtual}-${diaNum}`,
+                    descricao: 'RESGATE CAIXINHA POUPANÇA',
+                    categoria: 'Poupança / Caixinha',
+                    tipo: 'receita',
+                    status: 'Pago',
+                    valor: valor
+                });
+            }
+
+            inputValor.value = '';
+            salvarDados();
+            renderizarPoupanca();
+            atualizarInterface();
+        };
+
+        window.editarMetaPoupanca = function () {
+            const novaMeta = prompt('Qual o valor da sua meta na Caixinha Poupança (R$)?', poupanca.meta);
+            if (novaMeta !== null && !isNaN(parseFloat(novaMeta)) && parseFloat(novaMeta) > 0) {
+                poupanca.meta = parseFloat(novaMeta);
+                salvarDados();
+                renderizarPoupanca();
+            }
+        };
+
+        function renderizarContratos() {
+            const grid = document.getElementById('grid-financiamentos');
+            grid.innerHTML = '';
+
+            contratos.forEach(c => {
+                const valorMensalTotal = c.valorDia05 + c.valorDia20;
+                const parcelasRestantes = Math.max(0, c.totalParcelas - c.parcelasPagas);
+                const totalPago = c.parcelasPagas * valorMensalTotal;
+                const saldoDevedor = parcelasRestantes * valorMensalTotal;
+                const percentual = Math.min(100, ((c.parcelasPagas / c.totalParcelas) * 100)).toFixed(1);
+
+                const card = document.createElement('div');
+                card.className = 'fin-card';
+                card.style.borderTop = `3px solid ${c.cor}`;
+
+                card.innerHTML = `
+                    <div class="fin-top">
+                        <div>
+                            <h4>${c.titulo}</h4>
+                            <span class="fin-parcela-valor">${formatarMoeda(valorMensalTotal)} <small>/mês</small></span>
+                        </div>
+                        <button class="btn-edit-small" onclick="abrirModalContrato('${c.id}')">Editar</button>
+                    </div>
+
+                    <div class="fin-split-dates">
+                        <div class="split-pill">
+                            <span>Dia 05:</span>
+                            <strong>${formatarMoeda(c.valorDia05)}</strong>
+                        </div>
+                        <div class="split-pill">
+                            <span>Dia 20:</span>
+                            <strong>${formatarMoeda(c.valorDia20)}</strong>
+                        </div>
+                    </div>
+
+                    <div class="fin-progress-area">
+                        <div class="fin-progress-labels">
+                            <span>Meses: <strong>${c.parcelasPagas}/${c.totalParcelas}</strong></span>
+                            <span>${percentual}% quitado</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${percentual}%; background-color: ${c.cor}"></div>
+                        </div>
+                    </div>
+
+                    <div class="fin-stats">
+                        <div class="stat-box">
+                            <span>Total Pago</span>
+                            <strong class="text-green">${formatarMoeda(totalPago)}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>Restante (${parcelasRestantes}m)</span>
+                            <strong class="text-muted">${formatarMoeda(saldoDevedor)}</strong>
+                        </div>
+                    </div>
+
+                    <div class="fin-pay-buttons">
+                        <button class="btn-pay-half" onclick="lancarParteContrato('${c.id}', 'Dia 05')">
+                            + Lançar Dia 05
+                        </button>
+                        <button class="btn-pay-half" onclick="lancarParteContrato('${c.id}', 'Dia 20')">
+                            + Lançar Dia 20
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.lancarParteContrato = function (id, diaCiclo) {
+            const contrato = contratos.find(c => c.id === id);
+            if (!contrato) return;
+
+            const valorLancar = diaCiclo === 'Dia 05' ? contrato.valorDia05 : contrato.valorDia20;
+            if (valorLancar <= 0) {
+                alert(`O valor para ${diaCiclo} em "${contrato.titulo}" está zerado. Clique em "Editar" para definir um valor.`);
+                return;
+            }
+
+            if (diaCiclo === 'Dia 20' || contrato.valorDia20 === 0) {
+                if (contrato.parcelasPagas < contrato.totalParcelas) {
+                    contrato.parcelasPagas += 1;
+                }
+            }
+
+            const mesAtual = filtroMes.value !== 'TODOS' ? filtroMes.value : '11';
+            const diaNum = diaCiclo === 'Dia 05' ? '05' : '20';
+
+            lancamentos.push({
+                id: Date.now(),
+                ciclo: diaCiclo,
+                data: `2026-${mesAtual}-${diaNum}`,
+                descricao: contrato.titulo,
+                categoria: contrato.categoria,
+                tipo: 'despesa',
+                status: 'Pago',
+                valor: valorLancar
+            });
+
+            salvarDados();
+            renderizarContratos();
+            atualizarInterface();
+        };
+
+        window.abrirModalContrato = function (id) {
+            const c = contratos.find(item => item.id === id);
+            if (!c) return;
+
+            document.getElementById('modal-titulo').textContent = `Configurar: ${c.titulo}`;
+            document.getElementById('contrato-id').value = c.id;
+            document.getElementById('contrato-valor-05').value = c.valorDia05;
+            document.getElementById('contrato-valor-20').value = c.valorDia20;
+            document.getElementById('contrato-pagas').value = c.parcelasPagas;
+            document.getElementById('contrato-total').value = c.totalParcelas;
+
+            document.getElementById('modal-contrato').classList.remove('hidden');
+        };
+
+        window.fecharModal = function () {
+            document.getElementById('modal-contrato').classList.add('hidden');
+        };
+
+        document.getElementById('form-contrato').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('contrato-id').value;
+            const c = contratos.find(item => item.id === id);
+            if (c) {
+                c.valorDia05 = parseFloat(document.getElementById('contrato-valor-05').value);
+                c.valorDia20 = parseFloat(document.getElementById('contrato-valor-20').value);
+                c.parcelasPagas = parseInt(document.getElementById('contrato-pagas').value);
+                c.totalParcelas = parseInt(document.getElementById('contrato-total').value);
+                salvarDados();
+                renderizarContratos();
+            }
+            fecharModal();
+        });
+
+        function atualizarInterface() {
+            const mesSelecionado = filtroMes.value;
+            const cicloSelecionado = filtroCiclo.value;
+            const descSelecionada = filtroDescricao.value;
+            const termoBusca = campoBusca.value.toLowerCase();
+
+            const doMes = lancamentos.filter(item => {
+                const mesItem = item.data.split('-')[1];
+                return mesSelecionado === 'TODOS' || mesItem === mesSelecionado;
+            });
+
+            let receitas = 0, despesas = 0, pendentes = 0;
+            let rec05 = 0, desp05 = 0, pend05 = 0;
+            let rec20 = 0, desp20 = 0, pend20 = 0;
+            const gastosPorCategoria = {};
+
+            doMes.forEach(item => {
+                if (item.tipo === 'receita') {
+                    receitas += item.valor;
+                    if (item.ciclo === 'Dia 05') rec05 += item.valor;
+                    if (item.ciclo === 'Dia 20') rec20 += item.valor;
+                } else {
+                    despesas += item.valor;
+                    if (item.status === 'Pendente') pendentes += item.valor;
+
+                    if (item.ciclo === 'Dia 05') {
+                        desp05 += item.valor;
+                        if (item.status === 'Pendente') pend05 += item.valor;
+                    }
+                    if (item.ciclo === 'Dia 20') {
+                        desp20 += item.valor;
+                        if (item.status === 'Pendente') pend20 += item.valor;
+                    }
+
+                    gastosPorCategoria[item.categoria] = (gastosPorCategoria[item.categoria] || 0) + item.valor;
+                }
+            });
+
+            const saldo = receitas - despesas;
+            document.getElementById('total-receitas').textContent = formatarMoeda(receitas);
+            document.getElementById('total-despesas').textContent = formatarMoeda(despesas);
+            document.getElementById('total-pendente').textContent = formatarMoeda(pendentes);
+
+            const elSaldo = document.getElementById('saldo-atual');
+            elSaldo.textContent = formatarMoeda(saldo);
+            elSaldo.style.color = saldo >= 0 ? '#10b981' : '#f43f5e';
+
+            // Atualiza proporções das barras do gráfico lateral (Resumo do Mês)
+            const tetoReferencia = Math.max(receitas, despesas, pendentes, 1);
+            const pctReceitas = receitas > 0 ? Math.min(100, (receitas / tetoReferencia) * 100) : 0;
+            const pctDespesas = despesas > 0 ? Math.min(100, (despesas / tetoReferencia) * 100) : 0;
+            const pctSaldo = receitas > 0 ? Math.min(100, (Math.abs(saldo) / receitas) * 100) : (saldo !== 0 ? 100 : 0);
+            const pctPendente = despesas > 0 ? Math.min(100, (pendentes / despesas) * 100) : 0;
+
+            document.getElementById('bar-receitas').style.width = `${pctReceitas}%`;
+            document.getElementById('bar-despesas').style.width = `${pctDespesas}%`;
+
+            const elBarSaldo = document.getElementById('bar-saldo');
+            elBarSaldo.style.width = `${pctSaldo}%`;
+            elBarSaldo.style.background = saldo >= 0
+                ? 'linear-gradient(90deg, #38bdf8, #10b981)'
+                : 'linear-gradient(90deg, #f43f5e, #fb7185)';
+
+            document.getElementById('bar-pendente').style.width = `${pctPendente}%`;
+
+            // Atualiza cards quinzenais
+            document.getElementById('rec-05').textContent = formatarMoeda(rec05);
+            document.getElementById('desp-05').textContent = formatarMoeda(desp05);
+            document.getElementById('pend-05').textContent = formatarMoeda(pend05);
+            const saldo05 = rec05 - desp05;
+            const elSaldo05 = document.getElementById('saldo-05');
+            elSaldo05.textContent = `Sobra: ${formatarMoeda(saldo05)}`;
+            elSaldo05.style.color = saldo05 >= 0 ? '#10b981' : '#f87171';
+
+            document.getElementById('rec-20').textContent = formatarMoeda(rec20);
+            document.getElementById('desp-20').textContent = formatarMoeda(desp20);
+            document.getElementById('pend-20').textContent = formatarMoeda(pend20);
+            const saldo20 = rec20 - desp20;
+            const elSaldo20 = document.getElementById('saldo-20');
+            elSaldo20.textContent = `Sobra: ${formatarMoeda(saldo20)}`;
+            elSaldo20.style.color = saldo20 >= 0 ? '#10b981' : '#f87171';
+
+            const filtradosTabela = doMes.filter(item => {
+                const bateCiclo = cicloSelecionado === 'TODOS' || item.ciclo === cicloSelecionado;
+                const bateDesc = descSelecionada === 'TODAS' || item.descricao === descSelecionada;
+                const bateBusca = item.descricao.toLowerCase().includes(termoBusca) ||
+                    item.categoria.toLowerCase().includes(termoBusca);
+                return bateCiclo && bateDesc && bateBusca;
+            });
+
+            filtradosTabela.sort((a, b) => a.ciclo.localeCompare(b.ciclo) || new Date(a.data) - new Date(b.data));
+
+            tabelaCorpo.innerHTML = '';
+            if (filtradosTabela.length === 0) {
+                tabelaCorpo.innerHTML = '<tr><td colspan="7" class="empty-msg">Nenhum lançamento encontrado para este filtro.</td></tr>';
+            } else {
+                filtradosTabela.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const classeValor = item.tipo === 'receita' ? 'valor-positivo' : 'valor-negativo';
+                    const sinal = item.tipo === 'receita' ? '+' : '-';
+                    const classeStatus = item.status === 'Pago' ? 'badge-pago' : 'badge-pendente';
+                    const classeCiclo = item.ciclo === 'Dia 05' ? 'ciclo-05' : 'ciclo-20';
+
+                    tr.innerHTML = `
+                        <td><span class="ciclo-tag ${classeCiclo}">${item.ciclo}</span></td>
+                        <td>${formatarData(item.data)}</td>
+                        <td><strong>${item.descricao}</strong></td>
+                        <td><span class="cat-tag">${item.categoria}</span></td>
+                        <td>
+                            <button class="badge ${classeStatus}" onclick="alternarStatus(${item.id})" title="Clique para alternar Pago/Pendente">
+                                ${item.status}
+                            </button>
+                        </td>
+                        <td class="${classeValor}">${sinal} ${formatarMoeda(item.valor)}</td>
+                        <td>
+                            <button class="btn-delete" onclick="removerLancamento(${item.id})" title="Excluir">✕</button>
+                        </td>
+                    `;
+                    tabelaCorpo.appendChild(tr);
+                });
+            }
+
+            renderizarGrafico(gastosPorCategoria, despesas);
+        }
+
+        function renderizarGrafico(categoriasObj, totalDespesas) {
+            const container = document.getElementById('grafico-categorias');
+            container.innerHTML = '';
+
+            const entries = Object.entries(categoriasObj).sort((a, b) => b[1] - a[1]);
+
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="empty-msg">Sem saídas registradas no período.</p>';
+                return;
+            }
+
+            entries.forEach(([categoria, valor]) => {
+                const percentual = totalDespesas > 0 ? ((valor / totalDespesas) * 100).toFixed(1) : 0;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'bar-item';
+                itemDiv.innerHTML = `
+                    <div class="bar-info">
+                        <span>${categoria}</span>
+                        <span>${formatarMoeda(valor)} (${percentual}%)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${percentual}%"></div>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        document.getElementById('ciclo').addEventListener('change', sincronizarDataFormulario);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const descricaoDigitada = document.getElementById('descricao').value.trim().toUpperCase();
+            const categoria = document.getElementById('categoria').value;
+            const tipo = document.getElementById('tipo').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+
+            if (descricaoDigitada && !listaDescricoes.includes(descricaoDigitada)) {
+                listaDescricoes.push(descricaoDigitada);
+                renderizarListaDescricoes();
+            }
+
+            if (categoria === 'Poupança / Caixinha') {
+                if (tipo === 'despesa') poupanca.saldoTotal += valor;
+                if (tipo === 'receita') poupanca.saldoTotal = Math.max(0, poupanca.saldoTotal - valor);
+                renderizarPoupanca();
+            }
+
+            const novo = {
+                id: Date.now(),
+                ciclo: document.getElementById('ciclo').value,
+                data: document.getElementById('data').value,
+                descricao: descricaoDigitada,
+                categoria: categoria,
+                tipo: tipo,
+                status: document.getElementById('status').value,
+                valor: valor
+            };
+
+            lancamentos.push(novo);
+            salvarDados();
+            atualizarInterface();
+
+            document.getElementById('descricao').value = '';
+            document.getElementById('valor').value = '';
+        });
+
+        window.removerLancamento = function (id) {
+            const item = lancamentos.find(i => i.id === id);
+            if (item && item.categoria === 'Poupança / Caixinha') {
+                if (item.tipo === 'despesa') poupanca.saldoTotal = Math.max(0, poupanca.saldoTotal - item.valor);
+                if (item.tipo === 'receita') poupanca.saldoTotal += item.valor;
+                renderizarPoupanca();
+            }
+            lancamentos = lancamentos.filter(item => item.id !== id);
+            salvarDados();
+            atualizarInterface();
+        };
+
+        window.alternarStatus = function (id) {
+            const item = lancamentos.find(l => l.id === id);
+            if (item) {
+                item.status = item.status === 'Pago' ? 'Pendente' : 'Pago';
+                salvarDados();
+                atualizarInterface();
+            }
+        };
+
+        filtroMes.addEventListener('change', () => {
+            sincronizarDataFormulario();
+            atualizarInterface();
+        });
+        filtroCiclo.addEventListener('change', atualizarInterface);
+        filtroDescricao.addEventListener('change', atualizarInterface);
+        campoBusca.addEventListener('input', atualizarInterface);
+
+        document.getElementById('btn-limpar').addEventListener('click', () => {
+            if (confirm('Deseja zerar todos os lançamentos de TODOS os meses e a Caixinha?\n(Os Financiamentos e Contratos Fixos serão mantidos)')) {
+                lancamentos = [];
+                poupanca.saldoTotal = 0.00;
+                salvarDados();
+                renderizarPoupanca();
+                atualizarInterface();
+            }
+        });
+
+        document.getElementById('btn-exportar').addEventListener('click', () => {
+            let csv = 'Ciclo_Pagamento;Data;Descricao;Categoria;Tipo;Status;Valor\n';
+            lancamentos.forEach(l => {
+                csv += `${l.ciclo};${l.data};${l.descricao};${l.categoria};${l.tipo};${l.status};${l.valor.toFixed(2).replace('.', ',')}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Controle_Gastos_Completo_2026.csv';
+            link.click();
+        });
+
+        renderizarListaDescricoes();
+        renderizarPoupanca();
+        renderizarContratos();
+        atualizarInterface();
+    </script>
+</body>
+
+</html>
